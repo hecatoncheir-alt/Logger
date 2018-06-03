@@ -4,8 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"encoding/json"
-
 	"github.com/hecatoncheir/Broker"
 	"github.com/hecatoncheir/Configuration"
 )
@@ -26,9 +24,7 @@ func TestLoggerCanWriteLogData(test *testing.T) {
 	}
 
 	for event := range logunaTopic {
-		logEvent := LogData{}
-		json.Unmarshal(event, &logEvent)
-		if logEvent.Message != "test message" {
+		if event.Message != "test message" {
 			test.Fail()
 		}
 

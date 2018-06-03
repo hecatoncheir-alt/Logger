@@ -26,7 +26,7 @@ type LogWriter struct {
 }
 
 func New(apiVersion, serviceName, topicForWriteLog string, broker *broker.Broker) *LogWriter {
-	logger := LogWriter{LoggerTopic: topicForWriteLog, bro: broker, ServiceName: serviceName}
+	logger := LogWriter{LoggerTopic: topicForWriteLog, bro: broker, ServiceName: serviceName, APIVersion: apiVersion}
 	return &logger
 }
 
