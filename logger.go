@@ -6,6 +6,7 @@ import (
 
 	"errors"
 
+	"fmt"
 	"github.com/hecatoncheir/Broker"
 )
 
@@ -49,6 +50,8 @@ func (logWriter *LogWriter) Write(data LogData) error {
 
 	event := broker.EventData{
 		Message: data.Message, Data: string(eventData)}
+
+	fmt.Println(eventData)
 
 	err = logWriter.bro.WriteToTopic(logWriter.LoggerTopic, event)
 	if err != nil {
