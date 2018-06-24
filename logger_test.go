@@ -11,24 +11,45 @@ import (
 func TestLoggerCanWriteLogData(test *testing.T) {
 	conf := configuration.New()
 
-	bro := broker.New(conf.APIVersion, conf.ServiceName)
-	bro.Connect(conf.Development.Broker.Host, conf.Development.Broker.Port)
+	bro := broker.New(conf.APIVersion, "First test service for write log data")
+	err := bro.Connect(conf.Development.EventBus.Host, conf.Development.EventBus.Port)
+	if err != nil {
+		test.Error(err)
+	}
 
 	logWriter := New(conf.APIVersion, conf.ServiceName, conf.Development.LogunaTopic, bro)
 	logData := LogData{Message: "test message", Time: time.Now().UTC()}
-	go logWriter.Write(logData)
+	go func() {
+		err := logWriter.Write(logData)
+		if err != nil {
+			test.Error(err)
+		}
+	}()
 
-	logunaTopic, err := bro.ListenTopic(conf.Development.LogunaTopic, conf.APIVersion)
+	otherBrokerConnection := broker.New(conf.APIVersion, "Second test service for receive log data")
+	err = bro.Connect(conf.Development.EventBus.Host, conf.Development.EventBus.Port)
 	if err != nil {
-		test.Fatal(err)
+		test.Error(err)
 	}
 
-	for event := range logunaTopic {
-		if event.Message != "test message" {
-			test.Fail()
+	for event := range otherBrokerConnection.InputChannel {
+		if event.Message == "test message" {
+			break
 		}
 
-		break
+		if event.Message != "test message" {
+			test.Fail()
+			break
+		}
+
+		if event.ServiceName == "First test service for write log data" {
+			break
+		}
+
+		if event.ServiceName != "First test service for write log data" {
+			test.Fail()
+			break
+		}
 	}
 
 }

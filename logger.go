@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"errors"
-
 	"fmt"
 	"github.com/hecatoncheir/Broker"
 )
@@ -31,13 +29,10 @@ func New(apiVersion, serviceName, topicForWriteLog string, broker *broker.Broker
 	return &logger
 }
 
-var (
-	ErrLogDataWithoutTime = errors.New("log data without time")
-)
-
 func (logWriter *LogWriter) Write(data LogData) error {
 	if data.Time.IsZero() {
-		return ErrLogDataWithoutTime
+		println(fmt.Sprintf("LogData: %v without time", data))
+		data.Time = time.Now()
 	}
 
 	item := map[string]interface{}{
@@ -51,12 +46,7 @@ func (logWriter *LogWriter) Write(data LogData) error {
 	event := broker.EventData{
 		Message: data.Message, Data: string(eventData)}
 
-	fmt.Println(eventData)
-
-	err = logWriter.bro.WriteToTopic(logWriter.LoggerTopic, event)
-	if err != nil {
-		return err
-	}
+	logWriter.bro.Write(event)
 
 	return nil
 }
